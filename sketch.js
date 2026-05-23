@@ -619,10 +619,10 @@ function desenharPreview(){
     }
 
     let mx =
-    mouseX - width / 2;
+    previewMouseX - width / 2;
 
     let my =
-    mouseY - height / 2;
+    previewMouseY - height / 2;
 
     let d =
     dist(mx,my,0,0);
@@ -860,58 +860,69 @@ function mouseMoved(){
 
 /*
 ========================================================
-MOUSE DESKTOP
+INTERAÇÃO CORRIGIDA (DESKTOP E MOBILE)
 ========================================================
 */
 
 function mousePressed(){
 
-    /*
-    ignora ghost click mobile
-    */
-
-    if(
-        millis() - ultimoTouchTempo < 500
-    ){
-
+    // Evita cliques fantasmas/duplicados no mobile causados pelo delay do toque nativo
+    if(millis() - ultimoTouchTempo < 150){
         return false;
     }
+    ultimoTouchTempo = millis();
 
-    handleInteracao(
-        mouseX,
-        mouseY
-    );
+    let mx = mouseX - width / 2;
+    let my = mouseY - height / 2;
 
-    return false;
+    // Se o clique for dentro do diagrama, processa e previne ações do navegador
+    if(dist(mx, my, 0, 0) <= raioMax){
+        handleInteracao(mouseX, mouseY);
+        return false;
+    }
 }
-
-/*
-========================================================
-TOUCH MOBILE
-========================================================
-*/
 
 function touchStarted(){
 
     if(touches.length === 0){
-
-        return false;
+        return;
     }
 
     ultimoTouchTempo = millis();
 
     let t = touches[0];
-
     ultimoTouchX = t.x;
-
     ultimoTouchY = t.y;
 
-    handleInteracao(
-        t.x,
-        t.y
-    );
+    // Atualiza a posição de preview para o mobile também
+    previewMouseX = t.x;
+    previewMouseY = t.y;
 
-    return false;
+    let mx = t.x - width / 2;
+    let my = t.y - height / 2;
+
+    // Bloqueia e processa o clique APENAS se estiver dentro do círculo do diagrama
+    if(dist(mx, my, 0, 0) <= raioMax){
+        handleInteracao(t.x, t.y);
+        return false; 
+    }
+    // Se for fora do diagrama, não retorna false (permitindo o scroll normal da página)
+}
+
+function touchMoved(){
+
+    if(touches.length > 0){
+        previewMouseX = touches[0].x;
+        previewMouseY = touches[0].y;
+
+        let mx = previewMouseX - width / 2;
+        let my = previewMouseY - height / 2;
+
+        // Bloqueia o arrasto da tela APENAS se o usuário estiver movendo o dedo dentro do diagrama
+        if(dist(mx, my, 0, 0) <= raioMax){
+            return false;
+        }
+    }
 }
 
 function handleInteracao(xIn,yIn){
