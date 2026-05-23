@@ -1,0 +1,712 @@
+<!-- ========================= HTML COMPLETO ========================= -->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Diagrama de Dran</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html{
+    overflow-x:hidden;
+    scroll-behavior:smooth;
+}
+
+body{
+    margin:0;
+    padding:10px;
+    background:#000;
+    color:white;
+    font-family:'Segoe UI',sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+    overflow-x:hidden;
+    touch-action:pan-y;
+}
+
+.container{
+    width:100%;
+    max-width:1250px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:18px;
+    justify-content:center;
+    background:#111;
+    border:1px solid #2a2a2a;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 0 30px rgba(0,0,0,.8);
+}
+
+#canvas-container{
+    flex:1 1 600px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    position:relative;
+
+    width:100%;
+
+    overflow:visible;
+
+    min-height:680px;
+
+    touch-action:none;
+
+    padding-top:110px;
+
+    padding-bottom:70px;
+}
+
+#canvas-container canvas{
+    display:block;
+    max-width:100% !important;
+    height:auto !important;
+    touch-action:none;
+}
+
+.canvas-title{
+
+    position:absolute;
+
+    top:14px;
+
+    left:0;
+
+    width:100%;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    z-index:20;
+
+    pointer-events:none;
+
+    font-size:28px;
+    font-weight:bold;
+    color:#fff;
+
+    text-align:center;
+
+    text-shadow:0 0 10px rgba(0,0,0,.9);
+}
+
+#controls{
+    flex:1 1 340px;
+    max-width:360px;
+    display:flex;
+    flex-direction:column;
+    width:100%;
+}
+
+button{
+    border:none;
+    border-radius:10px;
+    background:#2a2a2a;
+    color:#ddd;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+    padding:12px 8px;
+    font-size:14px;
+    touch-action:manipulation;
+}
+
+button:hover{
+    background:#3a3a3a;
+    color:white;
+}
+
+button.active{
+    background:#f1f1f1;
+    color:#000;
+}
+
+.btn-group{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin-bottom:10px;
+}
+
+.conectivos-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+    margin-bottom:10px;
+}
+
+#btnNegTudo{
+    grid-column:span 5;
+    background:#391414;
+    color:#ff8e8e;
+}
+
+#btnNegTudo.active{
+    background:#ff6b6b;
+    color:#000;
+}
+
+.action-btn{
+    margin-top:8px;
+    width:100%;
+}
+
+.btn-registrar{
+    background:#203040;
+}
+
+.btn-limpar-diag{
+    background:#802828;
+}
+
+.btn-limpar-hist{
+    background:#303030;
+}
+
+#expressao-dinamica{
+    margin-top:10px;
+    background:#090909;
+    border:1px solid #2b2b2b;
+    border-radius:10px;
+    padding:14px;
+    min-height:60px;
+    line-height:1.5;
+    font-weight:bold;
+    font-size:15px;
+}
+
+#log-area{
+    margin-top:10px;
+    height:220px;
+    overflow-y:auto;
+    background:#050505;
+    border:1px solid #222;
+    border-radius:10px;
+    padding:10px;
+    font-size:13px;
+    -webkit-overflow-scrolling:touch;
+}
+
+.log-item{
+    border-bottom:1px solid #1d1d1d;
+    padding-bottom:6px;
+    margin-bottom:8px;
+    user-select:text;
+    pointer-events:none;
+}
+
+.legenda{
+    margin-top:14px;
+    background:#0d0d0d;
+    border:1px solid #232323;
+    border-radius:10px;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    font-size:12px;
+    color:#bbb;
+}
+
+.dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    display:inline-block;
+    margin-right:5px;
+}
+
+.learn-box{
+    margin-top:16px;
+    background:#080808;
+    border:1px solid #222;
+    border-radius:16px;
+    padding:18px;
+}
+
+.learn-title{
+    font-weight:bold;
+    color:white;
+    font-size:17px;
+    margin-bottom:18px;
+    padding-left:2px;
+}
+
+.learn-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px 18px;
+}
+
+.learn-item{
+    background:none;
+    border:none;
+    border-bottom:1px solid #555;
+    border-radius:0;
+    text-align:left;
+    padding:0 0 3px 0;
+    color:#bdbdbd;
+    font-size:13px;
+    font-weight:normal;
+}
+
+.learn-item:hover{
+    color:white;
+    background:none;
+}
+
+#info-box{
+    display:none;
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:360px;
+    max-width:90%;
+    background:#161616;
+    border:1px solid #555;
+    border-radius:14px;
+    padding:20px;
+    z-index:9999;
+    box-shadow:0 0 40px rgba(0,0,0,1);
+}
+
+#info-title{
+    display:block;
+    margin-bottom:10px;
+    font-size:18px;
+    color:white;
+}
+
+#info-text{
+    color:#ddd;
+    line-height:1.6;
+    font-size:14px;
+    white-space:pre-line;
+}
+
+.close-info{
+    position:absolute;
+    top:8px;
+    right:12px;
+    cursor:pointer;
+    font-size:22px;
+    color:#ff7675;
+}
+
+@media(max-width:850px){
+
+    .container{
+        flex-direction:column;
+        padding:14px;
+        gap:14px;
+    }
+
+    #controls{
+        max-width:100%;
+        width:100%;
+    }
+
+    #canvas-container{
+
+        min-height:unset;
+
+        width:100%;
+
+        aspect-ratio:1/1;
+
+        padding-top:100px;
+
+        padding-bottom:70px;
+    }
+
+    .canvas-title{
+        top:12px;
+        font-size:24px;
+    }
+}
+
+@media(max-width:768px){
+
+    body{
+        padding:6px;
+    }
+
+    .container{
+        padding:10px;
+        border-radius:14px;
+    }
+
+    #canvas-container{
+
+        flex:none;
+
+        width:100%;
+
+        min-height:unset;
+
+        height:auto;
+
+        aspect-ratio:1/1;
+
+        padding-top:92px;
+
+        padding-bottom:70px;
+
+        overflow:visible;
+
+        display:flex;
+
+        justify-content:center;
+
+        align-items:center;
+    }
+
+    #controls{
+        width:100%;
+        max-width:100%;
+    }
+
+    .btn-group{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .conectivos-grid{
+        grid-template-columns:repeat(5,1fr);
+    }
+
+    button{
+        min-height:48px;
+        font-size:14px;
+    }
+
+    .learn-grid{
+        grid-template-columns:1fr;
+    }
+
+    .canvas-title{
+
+        top:10px;
+
+        font-size:18px;
+
+        line-height:1;
+
+        padding:0;
+        margin:0;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div id="info-box">
+
+<span
+class="close-info"
+onclick="fecharInfo()">
+×
+</span>
+
+<b id="info-title">
+Título
+</b>
+
+<div id="info-text">
+Descrição
+</div>
+
+</div>
+
+<div id="canvas-container">
+
+<div class="canvas-title">
+Diagrama de Dran
+</div>
+
+</div>
+
+<div id="controls">
+
+<div class="btn-group">
+
+<button
+id="btnP"
+class="active"
+onclick="setEntrada('P')">
+P
+</button>
+
+<button
+id="btnQ"
+onclick="setEntrada('Q')">
+Q
+</button>
+
+<button
+id="btn¬"
+onclick="ativarModoNegacao()">
+¬
+</button>
+
+</div>
+
+<div class="conectivos-grid">
+
+<button
+id="AND"
+onclick="setOp('AND')">
+∧
+</button>
+
+<button
+id="OR"
+onclick="setOp('OR')">
+∨
+</button>
+
+<button
+id="IF"
+onclick="setOp('IF')">
+→
+</button>
+
+<button
+id="IFF"
+onclick="setOp('IFF')">
+↔
+</button>
+
+<button
+id="XOR"
+onclick="setOp('XOR')">
+⊻
+</button>
+
+<button
+id="btnNegTudo"
+onclick="negarExpressaoInteira()">
+¬(Expressão Completa)
+</button>
+
+</div>
+
+<div id="expressao-dinamica">
+Nenhuma expressão ativa
+</div>
+
+<button
+class="action-btn btn-registrar"
+onclick="registrarExpressao()">
+
+💾 Registrar Expressão
+
+</button>
+
+<button
+class="action-btn btn-limpar-diag"
+onclick="limparDiagrama()">
+
+Limpar Diagrama
+
+</button>
+
+<button
+class="action-btn btn-limpar-hist"
+onclick="limparLogs()">
+
+Limpar Histórico
+
+</button>
+
+<div id="log-area">
+
+<b>
+Histórico de Expressões:
+</b>
+
+<br>
+
+</div>
+
+<div class="legenda">
+
+<span>
+
+<span
+class="dot"
+style="background:#2ecc71;">
+</span>
+
+Tudo verde = tautologia
+
+</span>
+
+<span>
+
+<span
+class="dot"
+style="background:#e74c3c;">
+</span>
+
+Tudo vermelho = contradição
+
+</span>
+
+<span>
+
+<span
+class="dot"
+style="
+background:
+linear-gradient(
+90deg,
+#2ecc71 50%,
+#e74c3c 50%
+);
+">
+</span>
+
+Verde + vermelho = contingência
+
+</span>
+
+</div>
+
+<!-- ====================================================== -->
+<!-- CLIQUE PARA APRENDER RESTAURADO COMPLETO -->
+<!-- ====================================================== -->
+
+<div class="learn-box">
+
+<div class="learn-title">
+Clique para aprender
+</div>
+
+<div class="learn-grid">
+
+<button
+class="learn-item"
+onclick="
+mostrarInfo(
+'Proposições Simples',
+'Uma proposição simples é uma afirmação que possui apenas dois valores lógicos possíveis:\n\nVerdadeiro (V)\nou\nFalso (F).\n\nNo Diagrama de Dran, P e Q representam proposições simples.\n\nCada proposição ocupa uma posição estrutural dentro do diagrama.\n\nOs quadrantes possuem valores lógicos fixos:\n\nQ1 = Verdadeiro\nQ2 = Falso\nQ3 = Verdadeiro\nQ4 = Falso.'
+)">
+Proposições simples
+</button>
+
+<button
+class="learn-item"
+onclick="
+mostrarInfo(
+'Conectivos Lógicos',
+'∧  Conjunção (E)\nV apenas quando ambas forem verdadeiras.\n\n∨  Disjunção (OU)\nF apenas quando ambas forem falsas.\n\n→  Condicional\nF apenas quando V → F.\n\n↔  Bicondicional\nV quando ambas possuem o mesmo valor lógico.\n\n⊻  Disjunção Exclusiva\nV quando apenas uma é verdadeira.'
+)">
+Conectivos
+</button>
+
+<button
+class="learn-item"
+onclick="
+mostrarInfo(
+'Negações',
+'NEGAR PROPOSIÇÕES SIMPLES:\n\n¬(P) ⇔ ¬P\n\nA negação inverte o valor lógico da proposição.\n\n\nLEI DE MORGAN:\n\n¬(P ∧ Q) ⇔ (¬P ∨ ¬Q)\n\n¬(P ∨ Q) ⇔ (¬P ∧ ¬Q)\n\n\nNEGAÇÃO DA CONDICIONAL:\n\n¬(P → Q) ⇔ (P ∧ ¬Q)\n\n\nNEGAÇÃO DA BICONDICIONAL:\n\n¬(P ↔ Q) ⇔ (P ⊻ Q)\n\n\nNEGAÇÃO DA DISJUNÇÃO EXCLUSIVA:\n\n¬(P ⊻ Q) ⇔ (P ↔ Q)\n\n\nO botão ¬ ativa a negação manual.\n\nO botão ¬(Expressão Completa) aplica automaticamente equivalências estruturais.'
+)">
+Negações
+</button>
+
+<button
+class="learn-item"
+onclick="
+mostrarInfo(
+'Camadas do Diagrama',
+'As camadas representam níveis estruturais do diagrama.\n\nA primeira proposição fixa sua posição lógica em uma camada.\n\nA segunda proposição percorre dinamicamente as fatias.\n\nQuando existe espaço interno disponível, o sistema cria automaticamente uma camada inferior invertida para representar todas as combinações possíveis:\n\nVV\nVF\nFV\nFF.\n\nA camada central é reservada para organização estrutural e não pode iniciar proposições.'
+)">
+Camadas
+</button>
+
+<button
+class="learn-item"
+onclick="
+mostrarInfo(
+'Botões de Limpeza',
+'Limpar Diagrama:\n\nRemove todas as proposições do diagrama atual.\n\n\nLimpar Histórico:\n\nRemove todas as expressões registradas.'
+)">
+Botões de limpeza
+</button>
+
+<button
+class="learn-item"
+onclick="
+mostrarInfo(
+'Registro de Expressões',
+'Registrar Expressão salva a expressão lógica atual no histórico.\n\nOs registros são apenas visuais e não alteram o funcionamento estrutural do diagrama.'
+)">
+Registro de expressões
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="sketch.js"></script>
+
+<script>
+
+function mostrarInfo(titulo,texto){
+
+    document
+    .getElementById('info-title')
+    .innerText = titulo;
+
+    document
+    .getElementById('info-text')
+    .innerText = texto;
+
+    document
+    .getElementById('info-box')
+    .style.display = 'block';
+}
+
+function fecharInfo(){
+
+    document
+    .getElementById('info-box')
+    .style.display = 'none';
+}
+
+</script>
+
+</body>
+
+</html>
