@@ -1,4 +1,3 @@
-let ultimoTouchTempo = 0;
 let fatias = 20;
 let camadas = 6;
 
@@ -79,20 +78,53 @@ function setup(){
 
     /*
     ========================================================
-    TOUCH FUNCIONAL
+    CORREÇÃO TOUCH MOBILE DEFINITIVA
     ========================================================
     */
 
-   canvas.elt.style.touchAction = "manipulation";
+    canvas.elt.style.touchAction = "none";
+
+    canvas.elt.style.webkitUserSelect = "none";
+
+    canvas.elt.style.userSelect = "none";
 
     canvas.elt.style.display = "block";
 
     /*
     ========================================================
-    IMPEDIR SCROLL SOMENTE NO CANVAS
+    BLOQUEAR EVENTOS DUPLOS
     ========================================================
     */
 
+    canvas.elt.addEventListener(
+        "touchstart",
+        function(e){
+
+            e.preventDefault();
+
+        },
+        { passive:false }
+    );
+
+    canvas.elt.addEventListener(
+        "touchmove",
+        function(e){
+
+            e.preventDefault();
+
+        },
+        { passive:false }
+    );
+
+    canvas.elt.addEventListener(
+        "touchend",
+        function(e){
+
+            e.preventDefault();
+
+        },
+        { passive:false }
+    );
 
     atualizarUI();
 }
@@ -889,9 +921,14 @@ function mouseMoved(){
 
 function mousePressed(event){
 
-    if(
-        millis() - ultimoTouchTempo < 700
-    ){
+    /*
+    ========================================================
+    IGNORA MOUSE FALSO GERADO PELO TOUCH
+    ========================================================
+    */
+
+    if(touches.length > 0){
+
         return false;
     }
 
@@ -915,26 +952,38 @@ function touchStarted(event){
         event.preventDefault();
     }
 
-    if(touches.length > 0){
+    if(touches.length === 0){
 
-        ultimoTouchTempo = millis();
-
-        ultimoTouchX =
-        touches[0].x;
-
-        ultimoTouchY =
-        touches[0].y;
-
-        handleInteracao(
-            touches[0].x,
-            touches[0].y
-        );
+        return false;
     }
+
+    /*
+    ========================================================
+    PEGA TOUCH REAL
+    ========================================================
+    */
+
+    let t = touches[0];
+
+    ultimoTouchX = t.x;
+
+    ultimoTouchY = t.y;
+
+    handleInteracao(
+        t.x,
+        t.y
+    );
 
     return false;
 }
 
 function handleInteracao(xIn,yIn){
+
+    /*
+    ========================================================
+    COORDENADAS REAIS DO CANVAS
+    ========================================================
+    */
 
     let mx =
     xIn - width / 2;
@@ -980,12 +1029,17 @@ function handleInteracao(xIn,yIn){
         (TWO_PI / fatias)
     );
 
+    /*
+    ========================================================
+    MODO NEGAÇÃO
+    ========================================================
+    */
+
     if(modoNegacaoManual){
 
         for(let id in pontos){
 
-            let p =
-            pontos[id];
+            let p = pontos[id];
 
             if(
                 p.f === f
@@ -1004,10 +1058,17 @@ function handleInteracao(xIn,yIn){
         return;
     }
 
+    /*
+    ========================================================
+    IMPEDIR DUPLO CLIQUE MOBILE
+    ========================================================
+    */
+
+    let jaExisteMesmoLugar = false;
+
     for(let id in pontos){
 
-        let p =
-        pontos[id];
+        let p = pontos[id];
 
         let nomeBase =
         id.replace("¬","");
@@ -1020,23 +1081,26 @@ function handleInteracao(xIn,yIn){
             nomeBase === entradaAtiva
         ){
 
-            delete pontos[id];
-
-            ordemCliques =
-            ordemCliques.filter(
-                x => x !== id
-            );
-
-            if(ordemCliques.length === 0){
-
-                camadaObrigatoria = -1;
-            }
-
-            atualizarUI();
-
-            return;
+            jaExisteMesmoLugar = true;
         }
     }
+
+    /*
+    ========================================================
+    NÃO REMOVE NO MOBILE
+    ========================================================
+    */
+
+    if(jaExisteMesmoLugar){
+
+        return;
+    }
+
+    /*
+    ========================================================
+    NÃO DUPLICAR LETRA
+    ========================================================
+    */
 
     for(let id in pontos){
 
@@ -1049,10 +1113,22 @@ function handleInteracao(xIn,yIn){
         }
     }
 
+    /*
+    ========================================================
+    PRIMEIRA CAMADA
+    ========================================================
+    */
+
     if(ordemCliques.length === 0){
 
         camadaObrigatoria = c;
     }
+
+    /*
+    ========================================================
+    SEGUNDA PROPOSIÇÃO
+    ========================================================
+    */
 
     if(ordemCliques.length === 1){
 
@@ -1062,10 +1138,22 @@ function handleInteracao(xIn,yIn){
         }
     }
 
+    /*
+    ========================================================
+    LIMITE
+    ========================================================
+    */
+
     if(ordemCliques.length >= 2){
 
         return;
     }
+
+    /*
+    ========================================================
+    QUADRANTE
+    ========================================================
+    */
 
     if(
         existeProposicaoNoQuadrante(f)
@@ -1074,10 +1162,21 @@ function handleInteracao(xIn,yIn){
         return;
     }
 
+    /*
+    ========================================================
+    ADICIONAR
+    ========================================================
+    */
+
     let label =
     entradaAtiva;
 
-    pontos[label] = {f,c};
+    pontos[label] = {
+
+        f:f,
+
+        c:c
+    };
 
     ordemCliques.push(label);
 
