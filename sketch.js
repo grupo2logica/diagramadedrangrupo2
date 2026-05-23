@@ -78,7 +78,8 @@ function setup(){
     ========================================================
     */
 
-    canvas.elt.style.touchAction = "manipulation";
+    // Mudado para 'auto' para permitir que o navegador controle o scroll fora do canvas
+    canvas.elt.style.touchAction = "auto";
 
     canvas.elt.style.webkitUserSelect = "none";
 
@@ -866,16 +867,15 @@ INTERAÇÃO CORRIGIDA (DESKTOP E MOBILE)
 
 function mousePressed(){
 
-    // Evita cliques fantasmas/duplicados no mobile causados pelo delay do toque nativo
+    // Ignora cliques fantasmas gerados pelo delay do touch no mobile
     if(millis() - ultimoTouchTempo < 150){
-        return false;
+        return;
     }
-    ultimoTouchTempo = millis();
 
     let mx = mouseX - width / 2;
     let my = mouseY - height / 2;
 
-    // Se o clique for dentro do diagrama, processa e previne ações do navegador
+    // Só intercepta e para o evento se o clique for EXCLUSIVAMENTE dentro do diagrama
     if(dist(mx, my, 0, 0) <= raioMax){
         handleInteracao(mouseX, mouseY);
         return false;
@@ -894,31 +894,33 @@ function touchStarted(){
     ultimoTouchX = t.x;
     ultimoTouchY = t.y;
 
-    // Atualiza a posição de preview para o mobile também
     previewMouseX = t.x;
     previewMouseY = t.y;
 
     let mx = t.x - width / 2;
     let my = t.y - height / 2;
 
-    // Bloqueia e processa o clique APENAS se estiver dentro do círculo do diagrama
+    // Se o toque for DENTRO do círculo do diagrama, processa a lógica e bloqueia ações nativas
     if(dist(mx, my, 0, 0) <= raioMax){
         handleInteracao(t.x, t.y);
         return false; 
     }
-    // Se for fora do diagrama, não retorna false (permitindo o scroll normal da página)
+    
+    // Se o toque for FORA do diagrama, NÃO damos 'return false'. 
+    // Isso permite que o navegador processe o clique nos botões HTML e faça o scroll da página normalmente.
 }
 
 function touchMoved(){
 
     if(touches.length > 0){
-        previewMouseX = touches[0].x;
-        previewMouseY = touches[0].y;
+        let t = touches[0];
+        previewMouseX = t.x;
+        previewMouseY = t.y;
 
-        let mx = previewMouseX - width / 2;
-        let my = previewMouseY - height / 2;
+        let mx = t.x - width / 2;
+        let my = t.y - height / 2;
 
-        // Bloqueia o arrasto da tela APENAS se o usuário estiver movendo o dedo dentro do diagrama
+        // Bloqueia o arrasto da tela APENAS se o usuário estiver arrastando dentro do diagrama
         if(dist(mx, my, 0, 0) <= raioMax){
             return false;
         }
@@ -1107,7 +1109,10 @@ function handleInteracao(xIn,yIn){
         c:c
     };
 
-    ordemCliques.push(label);
+    let idx = ordemCliques.indexOf(label);
+    if(idx === -1) {
+        ordemCliques.push(label);
+    }
 
     atualizarUI();
 }
