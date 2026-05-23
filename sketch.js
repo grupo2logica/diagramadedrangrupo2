@@ -29,20 +29,16 @@ const CAMADA_CENTRAL = 1;
 
 /*
 ========================================================
-CONFIGURAÇÕES MOBILE/TABLET
+MOBILE FIX REAL
 ========================================================
 */
+
+let ultimoTouchTempo = 0;
 
 let ultimoTouchX = 0;
 let ultimoTouchY = 0;
 
 function calcularCanvasSize(){
-
-    /*
-    ========================================================
-    MOBILE / TABLET / DESKTOP
-    ========================================================
-    */
 
     if(windowWidth <= 768){
 
@@ -78,53 +74,17 @@ function setup(){
 
     /*
     ========================================================
-    CORREÇÃO TOUCH MOBILE DEFINITIVA
+    TOUCH CORRETO
     ========================================================
     */
 
-    canvas.elt.style.touchAction = "none";
+    canvas.elt.style.touchAction = "manipulation";
 
     canvas.elt.style.webkitUserSelect = "none";
 
     canvas.elt.style.userSelect = "none";
 
     canvas.elt.style.display = "block";
-
-    /*
-    ========================================================
-    BLOQUEAR EVENTOS DUPLOS
-    ========================================================
-    */
-
-    canvas.elt.addEventListener(
-        "touchstart",
-        function(e){
-
-            e.preventDefault();
-
-        },
-        { passive:false }
-    );
-
-    canvas.elt.addEventListener(
-        "touchmove",
-        function(e){
-
-            e.preventDefault();
-
-        },
-        { passive:false }
-    );
-
-    canvas.elt.addEventListener(
-        "touchend",
-        function(e){
-
-            e.preventDefault();
-
-        },
-        { passive:false }
-    );
 
     atualizarUI();
 }
@@ -374,14 +334,6 @@ function calcularOperacao(a,b,op){
 
     return false;
 }
-
-/*
-========================================================
-CORREÇÃO DEFINITIVA DE:
-(~p vs ~p)
-(~q vs ~q)
-========================================================
-*/
 
 function obterValoresUnarios(id1,fatiaBase){
 
@@ -834,12 +786,6 @@ function desenharGrade(){
 
     textStyle(BOLD);
 
-    /*
-    ========================================================
-    TEXTO RESPONSIVO MOBILE
-    ========================================================
-    */
-
     let tamanhoTexto =
     width * 0.07;
 
@@ -886,12 +832,6 @@ function desenharPontos(){
 
         textStyle(BOLD);
 
-        /*
-        ========================================================
-        TEXTO RESPONSIVO MOBILE
-        ========================================================
-        */
-
         let tamanho =
         width * 0.04;
 
@@ -918,23 +858,23 @@ function mouseMoved(){
     previewMouseY = mouseY;
 }
 
+/*
+========================================================
+MOUSE DESKTOP
+========================================================
+*/
 
-function mousePressed(event){
+function mousePressed(){
 
     /*
-    ========================================================
-    IGNORA MOUSE FALSO GERADO PELO TOUCH
-    ========================================================
+    ignora ghost click mobile
     */
 
-    if(touches.length > 0){
+    if(
+        millis() - ultimoTouchTempo < 500
+    ){
 
         return false;
-    }
-
-    if(event){
-
-        event.preventDefault();
     }
 
     handleInteracao(
@@ -945,23 +885,20 @@ function mousePressed(event){
     return false;
 }
 
-function touchStarted(event){
+/*
+========================================================
+TOUCH MOBILE
+========================================================
+*/
 
-    if(event){
-
-        event.preventDefault();
-    }
+function touchStarted(){
 
     if(touches.length === 0){
 
         return false;
     }
 
-    /*
-    ========================================================
-    PEGA TOUCH REAL
-    ========================================================
-    */
+    ultimoTouchTempo = millis();
 
     let t = touches[0];
 
@@ -978,12 +915,6 @@ function touchStarted(event){
 }
 
 function handleInteracao(xIn,yIn){
-
-    /*
-    ========================================================
-    COORDENADAS REAIS DO CANVAS
-    ========================================================
-    */
 
     let mx =
     xIn - width / 2;
@@ -1060,11 +991,9 @@ function handleInteracao(xIn,yIn){
 
     /*
     ========================================================
-    IMPEDIR DUPLO CLIQUE MOBILE
+    NÃO REMOVER NO MOBILE
     ========================================================
     */
-
-    let jaExisteMesmoLugar = false;
 
     for(let id in pontos){
 
@@ -1081,19 +1010,8 @@ function handleInteracao(xIn,yIn){
             nomeBase === entradaAtiva
         ){
 
-            jaExisteMesmoLugar = true;
+            return;
         }
-    }
-
-    /*
-    ========================================================
-    NÃO REMOVE NO MOBILE
-    ========================================================
-    */
-
-    if(jaExisteMesmoLugar){
-
-        return;
     }
 
     /*
