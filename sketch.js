@@ -83,7 +83,7 @@ function setup(){
     ========================================================
     */
 
-    canvas.elt.style.touchAction = "none";
+   canvas.elt.style.touchAction = "manipulation";
 
     canvas.elt.style.display = "block";
 
@@ -886,25 +886,19 @@ function mouseMoved(){
     previewMouseY = mouseY;
 }
 
-function touchMoved(){
 
-    if(touches.length > 0){
+function mousePressed(event){
 
-        previewMouseX =
-        touches[0].x;
-
-        previewMouseY =
-        touches[0].y;
-
-        ultimoTouchX =
-        touches[0].x;
-
-        ultimoTouchY =
-        touches[0].y;
+    if(
+        millis() - ultimoTouchTempo < 700
+    ){
+        return false;
     }
-}
 
-function mousePressed(){
+    if(event){
+
+        event.preventDefault();
+    }
 
     handleInteracao(
         mouseX,
@@ -914,11 +908,16 @@ function mousePressed(){
     return false;
 }
 
-function touchStarted(){
+function touchStarted(event){
 
-    ultimoTouchTempo = millis();
+    if(event){
+
+        event.preventDefault();
+    }
 
     if(touches.length > 0){
+
+        ultimoTouchTempo = millis();
 
         ultimoTouchX =
         touches[0].x;
@@ -931,6 +930,8 @@ function touchStarted(){
             touches[0].y
         );
     }
+
+    return false;
 }
 
 function handleInteracao(xIn,yIn){
